@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jane’s Canteen Window</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800&display=swap">
+<style>
+:root{--bg:#e9f5ef;--card:#ffffff;--ink:#16323a;--mute:#5c7a80;--red:#d9482b;--gold:#ffd35c;--line:#cfe5db;--jane:#fff4d6;--me:#d4efe2;--ok:#1f9d6b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1f22;--card:#172b2f;--ink:#e6f2ee;--mute:#9bb8b5;--line:#264247;--jane:#3a3418;--me:#1d4a3a;--ok:#4cd39b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1f22;--card:#172b2f;--ink:#e6f2ee;--mute:#9bb8b5;--line:#264247;--jane:#3a3418;--me:#1d4a3a;--ok:#4cd39b;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-weight:600;line-height:1.5}
+.wrap{max-width:1020px;margin:0 auto;padding:14px}
+h1{font-size:1.35rem;font-weight:800;margin:0}
+.sub{color:var(--mute);font-size:.85rem;margin:2px 0 10px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button,.ctl{font:inherit;font-weight:800;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:7px 16px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--card)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.grid{display:grid;gap:12px;grid-template-columns:300px 1fr;grid-template-areas:"stage talk" "pat table"}
+@media (max-width:760px){.grid{grid-template-columns:1fr;grid-template-areas:"stage" "talk" "pat" "table"}}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px}
+.stage{grid-area:stage;padding:0;overflow:hidden;position:relative}
+.stage svg{display:block;width:100%;max-width:340px;margin:0 auto}
+.stage .snd{position:absolute;right:8px;top:8px;padding:4px 10px;font-size:.8rem}
+.talkbox{grid-area:talk;display:flex;flex-direction:column}
+#log{min-height:230px;max-height:44vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px}
+.b{max-width:86%;padding:8px 12px;border-radius:14px;font-size:1rem;overflow-wrap:anywhere}
+.b.jane{background:var(--jane);align-self:flex-start;border-top-left-radius:4px}
+.b.me{background:var(--me);align-self:flex-end;border-top-right-radius:4px}
+.lbl{font-size:.78rem;color:var(--mute);margin:10px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font:inherit;font-size:.9rem;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:3px 10px;cursor:pointer}
+.chips button.big{border-color:var(--red);font-weight:800;padding:6px 16px;font-size:1rem}
+.row{display:flex;gap:8px;margin-top:10px}
+.row input{flex:1;min-width:0;font:inherit;font-size:16px;border:2px solid var(--ink);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--ink)}
+.row button{font:inherit;font-weight:800;background:var(--red);color:#fff;border:0;border-radius:10px;padding:8px 18px;cursor:pointer}
+.pat{grid-area:pat}.table{grid-area:table}
+h2{font-size:1rem;font-weight:800;margin:0 0 8px}
+.pat ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pat li{display:flex;gap:8px;align-items:flex-start;font-size:.92rem;color:var(--mute)}
+.pat li i{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:.8rem}
+.pat li.on{color:var(--ink)}.pat li.on i{background:var(--ok);border-color:var(--ok);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{border:2px solid var(--line);padding:6px 8px;text-align:left}
+th{background:var(--gold);color:#16323a}
+textarea{width:100%;margin-top:10px;font:inherit;font-size:16px;border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--card);color:var(--ink);resize:vertical}
+.restart{float:right}
+[hidden]{display:none!important}
+.hint{color:var(--mute);font-size:.88rem;margin:0 0 10px}
+.wbox{display:flex;flex-wrap:wrap;gap:8px;border:2px dashed var(--line);border-radius:12px;padding:8px;margin-bottom:12px}
+.wbox span{background:var(--gold);color:#16323a;border-radius:8px;padding:2px 10px;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.c{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center;position:relative}
+.c.ok{border-color:var(--ok);background:var(--me)}
+.c.bad{animation:shk .3s}
+.c .pic{font-size:3rem;background:none;border:0;cursor:pointer;line-height:1.2}
+.c .tag{position:absolute;left:10px;top:6px;font-weight:800;color:var(--mute)}
+.c .hrt{position:absolute;right:6px;top:4px;background:none;border:0;font-size:1.3rem;cursor:pointer;color:var(--red)}
+.c input{width:100%;font:inherit;font-size:16px;border:2px solid var(--ink);border-radius:8px;padding:5px 8px;background:var(--card);color:var(--ink);text-align:center}
+.chkb{font:inherit;font-weight:800;margin-top:6px;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:8px;padding:3px 14px;cursor:pointer}
+.c .fb{display:block;min-height:1.4em;font-size:.85rem;color:var(--red)}
+.c.ok .fb{color:var(--ok)}
+.res{font-weight:800;margin:12px 0 0}
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;border:2px dashed var(--line);border-radius:12px;padding:8px;margin-bottom:12px}
+.item{background:var(--card);border:2px solid var(--ink);border-radius:10px;padding:6px 12px;font-weight:800;cursor:grab;touch-action:none;user-select:none}
+.item.sel{background:var(--gold);color:#16323a}
+.item.ok{border-color:var(--ok);background:var(--me);cursor:default}
+.item.bad{border-color:var(--red);animation:shk .3s}
+.item.ghost{position:fixed;transform:translate(-50%,-50%);z-index:50;pointer-events:none;box-shadow:0 6px 14px #0004}
+.trays{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:760px){.trays{grid-template-columns:1fr}}
+.tray{border:2px solid var(--line);border-radius:14px;padding:8px;min-height:130px}
+.tray b{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;margin-right:6px}
+.drop{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+@keyframes shk{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes yap{from{transform:scaleY(.35)}to{transform:scaleY(1.1)}}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.eye{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}
+#mouth{transform-box:fill-box;transform-origin:center}
+.talking #mouth{animation:yap .25s infinite alternate}
+.talking #jane{animation:bob .45s infinite alternate}
+@media (prefers-reduced-motion:reduce){.eye,.talking #mouth,.talking #jane{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🥟 Jane’s Canteen Window</h1>
+<p class="sub">Unit 4 Eat Well Section A · 1d</p>
+<div class="tabs" role="group" aria-label="活动选择">
+<button id="tA" aria-pressed="true">1a  Words 词汇</button>
+<button id="tC" aria-pressed="false">1c  Sort 归类</button>
+<button id="tD" aria-pressed="false">1d  My three meals</button>
+<button id="tM" aria-pressed="false">拓展  My dream menu</button>
+<button class="ctl restart" id="rs" style="margin-left:auto">↺ Restart</button>
+</div>
+<section id="v1a" class="card">
+<h2>1a  Write the foods under the pictures 听发音，拼写单词</h2>
+<p class="hint">点图片听发音，在下面拼写出单词（可参考词框）。Which food(s) do you like? 点 ♡ 选出你喜欢的。</p>
+<div class="wbox" id="wbox"></div>
+<div class="cards" id="cards"></div>
+<p class="res" id="l1a"></p>
+</section>
+<section id="v1c" class="card" hidden>
+<h2>1c  What does Jane have for breakfast (B), lunch (L) and dinner (D)?</h2>
+<p class="hint">听完教材录音后，把食物拖进 Jane 的三餐托盘（触屏也可以：先点食物，再点托盘）。托盘上的 B / L / D 就是用首字母快速记录的方法。</p>
+<div class="pool" id="pool"></div>
+<div class="trays" id="trays"></div>
+<p class="res" id="l1c"></p>
+</section>
+<div class="grid" hidden>
+<section class="card stage" id="stage" aria-label="Jane">
+<button class="ctl snd" id="snd" aria-pressed="true">🔊 Voice on</button>
+<svg viewBox="0 0 300 300" role="img" aria-label="Jane at the canteen window">
+<rect width="300" height="300" fill="#bfe3d6"/>
+<g id="stripes"></g>
+<rect x="70" y="52" width="160" height="17" rx="5" fill="#16323a"/>
+<text x="150" y="64.5" text-anchor="middle" font-size="12" font-weight="800" fill="#ffd35c" font-family="Nunito,system-ui,sans-serif">Jane’s window</text>
+<g transform="translate(0,14)"><g id="jane">
+<path d="M98 118 Q84 62 150 56 Q216 62 202 118 Q226 168 220 236 Q198 222 192 190 L108 190 Q102 222 80 236 Q74 168 98 118Z" fill="#33201f"/>
+<path d="M88 278 Q88 202 124 188 L136 176 L164 176 L176 188 Q212 202 212 278Z" fill="#1f3556"/>
+<path d="M134 176 L150 214 L166 176Z" fill="#fff"/>
+<path d="M136 150 H164 V180 Q150 200 136 180Z" fill="#f7caa0"/>
+<path d="M136 156 H164 V166 Q150 176 136 166Z" fill="#e7a47c" opacity=".55"/>
+<path d="M122 190 L136 174 L150 206Z M178 190 L164 174 L150 206Z" fill="#fff" stroke="#d3dbe8" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M150 204 L126 192 Q121 206 126 220Z M150 204 L174 192 Q179 206 174 220Z" fill="#c0394f"/><rect x="143" y="197" width="14" height="14" rx="5" fill="#9e2a40"/>
+<path d="M92 168 Q76 222 84 256 Q106 246 114 206 L112 172Z M208 168 Q224 222 216 256 Q194 246 186 206 L188 172Z" fill="#33201f"/>
+<circle cx="109" cy="124" r="9" fill="#fcd5b0"/><circle cx="191" cy="124" r="9" fill="#fcd5b0"/><circle cx="108" cy="126" r="5" fill="#f4a592" opacity=".5"/><circle cx="192" cy="126" r="5" fill="#f4a592" opacity=".5"/>
+<ellipse cx="150" cy="118" rx="41" ry="44" fill="#fcd5b0"/>
+<path d="M107 120 Q98 62 150 58 Q202 62 193 120 Q188 100 174 94 Q166 104 158 110 Q152 98 148 90 Q134 106 107 120Z" fill="#33201f"/>
+<g id="brw" fill="none" stroke="#b58b52" stroke-width="2.4" stroke-linecap="round"><path d="M126 108 Q134 104 142 107"/><path d="M158 107 Q166 104 174 108"/></g>
+<g id="eo"><g class="eye"><ellipse cx="134" cy="123" rx="4.8" ry="6.5" fill="#1b1414"/><circle cx="135.8" cy="120.5" r="1.8" fill="#fff"/></g><g class="eye"><ellipse cx="166" cy="123" rx="4.8" ry="6.5" fill="#1b1414"/><circle cx="167.8" cy="120.5" r="1.8" fill="#fff"/></g></g>
+<g id="ec" style="display:none" fill="none" stroke="#1b1414" stroke-width="3.5" stroke-linecap="round"><path d="M126 126 Q134 117 142 126"/><path d="M158 126 Q166 117 174 126"/></g>
+<path d="M149 132 Q151 136 154 133" fill="none" stroke="#d9a07c" stroke-width="2" stroke-linecap="round"/>
+<ellipse cx="122" cy="138" rx="7" ry="4" fill="#f59a8b" opacity=".3"/><ellipse cx="178" cy="138" rx="7" ry="4" fill="#f59a8b" opacity=".3"/>
+<circle id="bl" cx="122" cy="138" r="8" fill="#f2766a" opacity="0"/>
+<circle id="br" cx="178" cy="138" r="8" fill="#f2766a" opacity="0"/>
+<path id="mouth" d="M134 146 Q150 160 166 146" fill="none" stroke="#a3342a" stroke-width="3.5" stroke-linecap="round"/>
+</g></g>
+<rect x="0" y="236" width="300" height="64" fill="#a8683a"/>
+<rect x="0" y="230" width="300" height="10" fill="#c98a52"/>
+<ellipse cx="112" cy="232" rx="20" ry="9" fill="#1f3556"/><ellipse cx="188" cy="232" rx="20" ry="9" fill="#1f3556"/>
+<ellipse cx="126" cy="234" rx="11" ry="7" fill="#fcd5b0"/><ellipse cx="174" cy="234" rx="11" ry="7" fill="#fcd5b0"/>
+<text x="30" y="226" font-size="26">🥟</text><text x="74" y="226" font-size="26">🍜</text><text x="206" y="226" font-size="26">🍉</text><text x="248" y="226" font-size="26">🥗</text>
+
+</svg>
+</section>
+<section class="card talkbox">
+<div id="log" aria-live="polite"></div>
+<div id="chips"></div>
+<div class="row"><input id="inp" type="text" lang="en" autocomplete="off" placeholder="Type in English…"><button id="send">Send</button></div>
+</section>
+<section class="card pat">
+<h2 id="patH">Target sentences 目标句式</h2>
+<ul id="pats"></ul>
+</section>
+<section class="card table">
+<h2 id="tabH"></h2>
+<table><thead><tr><th>Meal</th><th>Food</th><th>Drink</th></tr></thead><tbody id="tb"></tbody></table>
+<textarea id="why" rows="2" placeholder="Why do you choose these? 说说你的理由：I like … because …"></textarea>
+</section>
+</div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const stage=$("stage"),log=$("log"),chips=$("chips"),inp=$("inp");
+const M=["Breakfast","Lunch","Dinner"];
+const FOODS=[
+["watermelon juice","watermelon juice","🍉","d"],["(?<!watermelon )juice","juice","🧃","d"],["milk","milk","🥛","d"],["tea","tea","🍵","d"],["coffee","coffee","☕","d"],
+["bread","bread","🍞","f"],["eggs?","eggs","🥚","f"],["beans?","beans","🫘","f"],["porridge","porridge","🥣","f"],["rice","rice","🍚","f"],
+["noodles?","noodles","🍜","f"],["dumplings?","dumplings","🥟","f"],["chicken","chicken","🍗","f"],["beef","beef","🥩","f"],["mutton","mutton","🍖","f"],
+["sandwich(?:es)?","sandwiches","🥪","f"],["fish and chips","fish and chips","🍟","f"],["pizza","pizza","🍕","f"],["salad","salad","🥗","f"],
+["ice cream","ice cream","🍦","f"],["cookies?","cookies","🍪","f"],["yogurt","yogurt","🍨","f"],["carrots?","carrots","🥕","f"],["cabbage","cabbage","🥬","f"],["onions?","onions","🧅","f"]
+];
+const CHIPS=["bread","eggs","porridge","rice","noodles","dumplings","chicken","beef","sandwiches","pizza","salad","ice cream","cookies","yogurt","milk","juice","watermelon juice","tea","coffee"];
+const DR=[["milk","juice"],null,["juice","coffee"]];
+const dq=i=>DR[i]?"Which would you like to drink, "+DR[i][0]+" or "+DR[i][1]+"?":"What would you like to drink?";
+const PAT=[
+["I usually have … for …",/\bi (usually |often |always )?(have|eat)\b/],
+["I’d like …",/\bi(?:'d| would) like\b/],
+["What do you usually have for …?",/what do you (usually )?(have|eat) for/],
+["Would you like …? / Which would you like, A or B?",/\b(would you like|which would you like)\b/]];
+const JANE={breakfast:"I usually have bread and milk. Sometimes I have eggs and beans.",lunch:"I usually have lunch at school. Sometimes I have chicken or beef, sometimes sandwiches, and sometimes fish and chips. I also drink juice or eat yogurt.",dinner:"My family really likes pizza and salad for dinner. After that we sometimes have ice cream or cookies for a treat!"};
+const MOUTH={smile:["M134 146 Q150 160 166 146","none"],happy:["M130 144 Q150 170 170 144Z","#c4473b"],think:["M142 150 Q150 146 158 151","none"]};
+let mode="d",step=0,phase="ask",lit=new Set(),soundOn=true,offer=false;
+let data={};
+const blank=()=>({Breakfast:{f:[],d:[]},Lunch:{f:[],d:[]},Dinner:{f:[],d:[]}});
+const find=n=>FOODS.filter(x=>new RegExp("\\b(?:"+x[0]+")\\b").test(n)).map(x=>({l:x[1],e:x[2],t:x[3]}));
+const join=a=>a.map(x=>x.l).join(" and ");
+
+(function(){let s="";for(let i=0;i<10;i++){s+='<rect x="'+i*30+'" y="0" width="30" height="34" fill="'+(i%2?"#fff":"#d9482b")+'"/><circle cx="'+(i*30+15)+'" cy="34" r="15" fill="'+(i%2?"#fff":"#d9482b")+'"/>';}$("stripes").innerHTML=s})();
+
+function mood(m){const v=MOUTH[m]||MOUTH.smile;const p=$("mouth");p.setAttribute("d",v[0]);p.setAttribute("fill",v[1]);const o=m==="happy"?1:0;$("eo").style.display=o?"none":"";$("ec").style.display=o?"":"none";$("brw").setAttribute("transform",m==="think"?"translate(0,-3)":m==="happy"?"translate(0,-2)":"translate(0,0)");$("bl").setAttribute("opacity",o);$("br").setAttribute("opacity",o)}
+function speak(t){
+ if(!soundOn||!("speechSynthesis" in window)){stage.classList.add("talking");setTimeout(()=>stage.classList.remove("talking"),Math.min(4000,t.length*55));return}
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t.replace(/[^\x00-\x7F’]/g,""));u.lang="en-GB";u.rate=.9;
+ const stop=()=>stage.classList.remove("talking");u.onend=stop;u.onerror=stop;stage.classList.add("talking");speechSynthesis.speak(u);setTimeout(stop,12000)}catch(e){}
+}
+function add(w,t){const d=document.createElement("div");d.className="b "+w;d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+function say(t,m){add("jane",t);mood(m||"smile");speak(t)}
+
+function renderPats(){
+ $("pats").innerHTML=PAT.map((p,i)=>'<li class="'+(lit.has(i)?"on":"")+'"><i>'+(lit.has(i)?"✓":"")+'</i><span>'+p[0]+'</span></li>').join("");
+ $("patH").textContent="Target sentences 目标句式"+(lit.size===PAT.length?" 🎉":"");
+}
+function renderTable(){
+ $("tabH").textContent=mode==="d"?"My three meals 我的一日三餐":"My dream menu 我的理想食谱";
+ const cell=a=>a.length?a.map(x=>x).join(", "):"–";
+ $("tb").innerHTML=M.map(m=>'<tr><td>'+m+'</td><td></td><td></td></tr>').join("");
+ [...$("tb").rows].forEach((r,i)=>{r.cells[1].textContent=cell(data[mode][M[i]].f);r.cells[2].textContent=cell(data[mode][M[i]].d)});
+}
+function store(meal,items){items.forEach(x=>{const a=data[mode][meal][x.t],s=x.e+" "+x.l;if(!a.includes(s))a.push(s)});renderTable()}
+
+function btn(t,fn,cls){const b=document.createElement("button");b.type="button";b.textContent=t;if(cls)b.className=cls;b.onclick=fn;return b}
+function row(label,btns){const l=document.createElement("div");l.className="lbl";l.textContent=label;const c=document.createElement("div");c.className="chips";btns.forEach(b=>c.appendChild(b));chips.append(l,c)}
+function frame(l){return mode==="d"?"I usually have "+l+" for "+M[step].toLowerCase()+".":"I’d like "+l+"."}
+function pick(l){const v=inp.value.trim();inp.value=v?v.replace(/\.$/,"")+" and "+l+".":frame(l);inp.focus()}
+function renderChips(){
+ chips.innerHTML="";
+ if(phase==="free"){
+  row("Ask Jane 问问 Jane",M.map(m=>btn(m,()=>{inp.value="What do you usually have for "+m.toLowerCase()+"?";inp.focus()})).concat([btn("Would you like …?",()=>{inp.value="Would you like some ice cream?";inp.focus()})]));
+  return}
+ if(offer){row("Reply 回答",[btn("Yes, please.",()=>submit("Yes, please."),"big"),btn("No, thanks.",()=>submit("No, thanks."),"big")]);return}
+ if(mode==="m"&&step%2===1&&DR[step>>1]){
+  row("Choose one 选一个",DR[step>>1].map(o=>btn(o,()=>submit("I’d like "+o+"."),"big")));return}
+ const m=mode==="d"?M[step]:M[step>>1];
+ row("Click to build your sentence 点词造句",CHIPS.filter(l=>!(mode==="m"&&step%2===1)||FOODS.find(x=>x[1]===l)[3]==="d").map(l=>{const f=FOODS.find(x=>x[1]===l);return btn(f[2]+" "+l,()=>pick(l))}));
+}
+
+function light(n){PAT.forEach((p,i)=>{if(p[1].test(n))lit.add(i)});renderPats()}
+function submit(text){
+ add("me",text);
+ const n=text.toLowerCase().replace(/[’‘]/g,"'");
+ light(n);
+ setTimeout(()=>respond(n),300);
+}
+
+function respond(n){
+ if(phase==="free")return free(n);
+ if(mode==="d")return stepD(n);
+ stepM(n);
+}
+function stepD(n){
+ const meal=M[step],fs=find(n);
+ if(!fs.length){say("Sorry? Tell me what you eat. Try: “I usually have … for "+meal.toLowerCase()+".”","think");return}
+ store(meal,fs);
+ const full=/\bi (usually |often |always )?(have|eat)\b/.test(n);
+ let r=full?"Oh, "+join(fs)+"! Sounds good. ":"Oh, "+join(fs)+"! Next time, try a full sentence: I usually have … for … ";
+ step++;
+ if(step<3){say(r+"And what do you usually have for "+M[step].toLowerCase()+"?",full?"smile":"think")}
+ else{phase="free";say(r+"Now I know your three meals! Your turn: ask me about my meals, or offer me something.","happy")}
+ renderChips();
+}
+function stepM(n){
+ const mi=step>>1,meal=M[mi];let fs=find(n);
+ if(offer){offer=false;if(/\b(yes|sure|ok|okay|please)\b/.test(n)&&!fs.length)fs=find("watermelon juice");renderChips()}
+ const tea=fs.some(x=>x.l==="tea");
+ if(tea)fs=fs.filter(x=>x.l!=="tea");
+ const sorry=tea?"Sorry, there isn’t any tea, but there’s watermelon juice! ":"";
+ if(!fs.length){
+  if(tea){offer=step%2===1;say(sorry+(offer?"Would you like that?":"What would you like?"),"think");renderChips();return}
+  say(step%2?"Which would you like, "+DR[mi][0]+" or "+DR[mi][1]+"?":"Sorry? Try: “I’d like … for "+meal.toLowerCase()+".”","think");return}
+ store(meal,fs);
+ step++;
+ if(step>=6){phase="free";say(sorry+"What a great menu! Tell your group why you chose these. Now can you offer me something? Try “Would you like …?”","happy")}
+ else if(step%2===1){say(sorry+"Good choice! Which would you like to drink, "+DR[mi][0]+" or "+DR[mi][1]+"?","smile")}
+ else{say(sorry+"Nice! Now, what would you like for "+M[step>>1].toLowerCase()+"?","smile")}
+ renderChips();
+}
+function free(n){
+ const mm=n.match(/what do you (?:usually )?(?:have|eat) for (breakfast|lunch|dinner)/);
+ if(mm){say(JANE[mm[1]],"happy");return}
+ if(/what do you (usually )?(have|eat)/.test(n)){say("Which meal? Breakfast, lunch or dinner?","think");return}
+ if(/do you want/.test(n)){say("Yes, please! By the way, “Would you like …?” is more polite than “Do you want …?”. Try it!","happy");return}
+ if(/which would you like.*\bor\b/.test(n)){say("Hmm… the first one, please!","happy");return}
+ if(/would you like/.test(n)){say("Yes, please! That sounds delicious.","happy");return}
+ say("Hmm? Ask me about my meals, or offer me something: “Would you like …?”","think");
+}
+
+let view='a',sel=null,placed=0,wrong=0,tries={},like=new Set(),done=0;
+const W=[['watermelon','🍉'],['cabbage','🥬'],['mutton','🍖'],['cookie','🍪'],['onion','🧅'],['carrot','🥕']];
+const SORT=[['bread and milk','🍞🥛','B'],['eggs and beans','🥚🫘','B'],['chicken','🍗','L'],['beef','🥩','L'],['sandwiches','🥪','L'],['fish and chips','🍟','L'],['juice','🧃','L'],['yogurt','🍨','L'],['pizza','🍕','D'],['salad','🥗','D'],['ice cream','🍦','D'],['cookies','🍪','D']];
+const TN={B:'Breakfast',L:'Lunch',D:'Dinner'};
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x)e.textContent=x;return e};
+function show(v){view=v;$('v1a').hidden=v!=='a';$('v1c').hidden=v!=='c';document.querySelector('.grid').hidden=v==='a'||v==='c';Object.entries({a:'tA',c:'tC',d:'tD',m:'tM'}).forEach(([k,id])=>$(id).setAttribute('aria-pressed',k===v))}
+function upd1a(){const a=[...like];const s=a.length?'   I like '+(a.length>1?a.slice(0,-1).join(', ')+' and '+a[a.length-1]:a[0])+'.':'';$('l1a').textContent=done+' / 6'+(done===6?' 🎉 Well done!':'')+s}
+function build1a(){
+ done=0;tries={};like=new Set();
+ $('wbox').innerHTML='';W.forEach(w=>$('wbox').appendChild(el('span','',w[0])));
+ const box=$('cards');box.innerHTML='';
+ W.forEach((w,i)=>{
+  const c=el('div','c'),pic=el('button','pic',w[1]),inp=el('input'),fb=el('span','fb'),h=el('button','hrt','♡'),ok=el('button','chkb','Check');
+  pic.type=ok.type=h.type='button';pic.setAttribute('aria-label','listen: '+w[0]);pic.onclick=()=>speak(w[0]);
+  inp.placeholder='type the word';inp.autocomplete='off';inp.spellcheck=false;inp.setAttribute('autocapitalize','off');
+  h.onclick=()=>{if(like.has(w[0])){like.delete(w[0]);h.textContent='♡'}else{like.add(w[0]);h.textContent='❤️'}upd1a()};
+  const chk=()=>{const v=inp.value.trim().toLowerCase();if(!v||c.classList.contains('ok'))return;
+   if(v===w[0]){c.classList.add('ok');fb.textContent='✓ '+w[0];inp.disabled=true;ok.hidden=true;done++;upd1a();speak(w[0])}
+   else{c.classList.remove('bad');void c.offsetWidth;c.classList.add('bad');tries[i]=(tries[i]||0)+1;fb.textContent=v===w[0]+'s'?'Singular, please. 用单数':tries[i]>1?'Hint: '+w[0][0]+'… ('+w[0].length+' letters)':'Try again'}};
+  ok.onclick=chk;inp.addEventListener('keydown',e=>{if(e.key==='Enter')chk()});
+  c.append(el('span','tag','ABCDEF'[i]),h,pic,inp,ok,fb);box.appendChild(c)});
+ upd1a()
+}
+function upd1c(m){$('l1c').textContent=(m?m+'  ':'')+placed+' / 12'+(wrong?' · 错 '+wrong+' 次':'')+(placed===12?' 🎉 全部正确！':'')}
+function drop(d,t){
+ if(!d||d.dataset.done)return;sel=null;document.querySelectorAll('.item.sel').forEach(x=>x.classList.remove('sel'));
+ if(d.dataset.m===t.dataset.m){d.dataset.done=1;d.classList.add('ok');t.querySelector('.drop').appendChild(d);placed++;upd1c('✓')}
+ else{wrong++;d.classList.add('bad');setTimeout(()=>d.classList.remove('bad'),500);upd1c('✗ 不是 '+TN[t.dataset.m]+'，再想一想 / 再听一听')}
+}
+function bind(d){
+ d.addEventListener('pointerdown',e=>{
+  if(d.dataset.done)return;e.preventDefault();speak(d.dataset.w);
+  const sx=e.clientX,sy=e.clientY;let g=null;d.setPointerCapture(e.pointerId);
+  const mv=ev=>{if(!g&&Math.hypot(ev.clientX-sx,ev.clientY-sy)>6){g=d.cloneNode(true);g.className='item ghost';document.body.appendChild(g);d.style.opacity=.35}
+   if(g){g.style.left=ev.clientX+'px';g.style.top=ev.clientY+'px'}};
+  const end=ev=>{d.removeEventListener('pointermove',mv);d.removeEventListener('pointerup',end);d.removeEventListener('pointercancel',end);d.style.opacity='';
+   if(g){g.remove();const t=ev.type==='pointerup'&&document.elementFromPoint(ev.clientX,ev.clientY);const tray=t&&t.closest('.tray');if(tray)drop(d,tray)}
+   else if(ev.type==='pointerup'){const was=d.classList.contains('sel');document.querySelectorAll('.item.sel').forEach(x=>x.classList.remove('sel'));sel=was?null:d;if(!was)d.classList.add('sel')}};
+  d.addEventListener('pointermove',mv);d.addEventListener('pointerup',end);d.addEventListener('pointercancel',end)
+ })
+}
+function build1c(){
+ placed=0;wrong=0;sel=null;const p=$('pool');p.innerHTML='';
+ SORT.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).forEach(([,x])=>{const d=el('div','item',x[1]+' '+x[0]);d.dataset.m=x[2];d.dataset.w=x[0];bind(d);p.appendChild(d)});
+ const tr=$('trays');tr.innerHTML='';
+ ['B','L','D'].forEach(k=>{const t=el('div','tray');t.dataset.m=k;t.appendChild(el('b','',k));t.append(TN[k]);t.appendChild(el('div','drop'));t.onclick=()=>{if(sel)drop(sel,t)};tr.appendChild(t)});
+ upd1c('')
+}
+function start(m){
+ show(m);
+ mode=m;step=0;phase="ask";offer=false;lit=new Set();data[m]=blank();log.innerHTML="";inp.value="";
+ $("tD").setAttribute("aria-pressed",m==="d");$("tM").setAttribute("aria-pressed",m==="m");
+ renderPats();renderTable();renderChips();
+ say(m==="d"?"Hi, I’m Jane! Let’s talk about your meals. What do you usually have for breakfast?":"Hello! Welcome to my window. Today you can order your dream meals. What would you like for breakfast?");
+}
+$("tA").onclick=()=>show("a");$("tC").onclick=()=>show("c");$("tD").onclick=()=>start("d");$("tM").onclick=()=>start("m");
+$("rs").onclick=()=>view==="a"?build1a():view==="c"?build1c():start(mode);
+$("snd").onclick=()=>{soundOn=!soundOn;$("snd").setAttribute("aria-pressed",soundOn);$("snd").textContent=soundOn?"🔊 Voice on":"🔇 Voice off";if(!soundOn&&"speechSynthesis" in window)speechSynthesis.cancel()};
+function send(){const t=inp.value.trim();if(t){inp.value="";submit(t)}}
+$("send").onclick=send;
+inp.addEventListener("keydown",e=>{if(e.key==="Enter")send()});
+build1a();build1c();show("a");
+</script>
+</body>
+</html>
